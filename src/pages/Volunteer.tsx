@@ -7,6 +7,7 @@ import CommunityFeed from '@/components/volunteer/CommunityFeed';
 import InteractiveCalendar from '@/components/InteractiveCalendar';
 import SignInPrompt from '@/components/SignInPrompt';
 import RoleSelector from '@/components/volunteer/RoleSelector';
+
 import { Button } from '@/components/ui/button';
 import { useVolunteerTasks } from '@/hooks/useVolunteerTasks';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +22,7 @@ const Volunteer = () => {
   const [showProgressDrawer, setShowProgressDrawer] = useState(false);
   const [showCommunityPrompt, setShowCommunityPrompt] = useState(false);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { user, profile } = useAuth();
   const { tasks, loading, error, acceptTask, updateTask, getStats } = useVolunteerTasks({
@@ -42,18 +44,21 @@ const Volunteer = () => {
   }));
 
   const [volunteerStats, setVolunteerStats] = useState({
-    totalPoints: 145,
-    tasksCompleted: 23,
-    rank: 'Community Champion',
-    level: 3,
+    totalPoints: user ? 145 : 0,
+    tasksCompleted: user ? 23 : 0,
+    rank: user ? 'Community Champion' : 'Guest',
+    level: user ? 3 : 1,
   });
 
   // Filter tasks based on selected role
   const filteredTasks = selectedRole ? transformedTasks.filter((task) => task.type === selectedRole) : transformedTasks;
 
   const handleTaskUpdate = async (taskId: number, newStatus: 'available' | 'in-progress' | 'completed') => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
-      // Find the original task ID from the transformed tasks
       const originalTaskId = tasks[taskId - 1]?.id;
       if (originalTaskId) {
         await updateTask(originalTaskId, { status: newStatus });
@@ -68,6 +73,10 @@ const Volunteer = () => {
   };
 
   const handleAcceptTask = async (taskId: string) => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
       await acceptTask(taskId);
     } catch (error) {
@@ -76,13 +85,13 @@ const Volunteer = () => {
   };
 
   const handleLogin = async (email: string, password: string) => {
-    // This would be handled by the LoginModal component
-    setCurrentView('role-selection');
+    // Placeholder for actual login logic (handled by AuthProvider)
+    setShowLoginModal(false);
+    // Simulate login success
+    setCurrentView('role-selection'); // Return to role selection after login
   };
 
-  // Check if user is logged in
-  const isLoggedIn = !!user;
-  const userName = user?.email?.split('@')[0] || profile?.full_name || 'Volunteer';
+  const userName = user?.email?.split('@')[0] || profile?.full_name || 'Guest';
 
   const handleRoleSelection = (role: 'pickup' | 'delivery') => {
     setSelectedRole(role);
@@ -90,12 +99,7 @@ const Volunteer = () => {
   };
 
   const startVolunteering = () => {
-    if (isLoggedIn) {
-      setCurrentView('role-selection');
-    } else {
-      // Do nothing or log message, as we'll show alert instead of prompt
-      console.log('Please sign in to access the volunteer portal.');
-    }
+    setCurrentView('role-selection');
   };
 
   // Welcome Screen
@@ -163,27 +167,6 @@ const Volunteer = () => {
     );
   }
 
-  // Show access denied message if user is not logged in
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen pt-16 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <Alert variant="destructive" className="max-w-md mx-auto">
-            <Lock className="h-4 w-4" />
-            <AlertTitle>Access Denied</AlertTitle>
-            <AlertDescription>
-              You need to be signed in to access the volunteer portal. Please{' '}
-              <a href="/signin" className="text-green-600 hover:underline">
-                sign in
-              </a>{' '}
-              to continue and start making a difference!
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
-
   // Role Selection
   if (currentView === 'role-selection') {
     return (
@@ -209,7 +192,7 @@ const Volunteer = () => {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
             Let's make a difference today as a {selectedRole} volunteer
           </p>
-          {profile?.full_name && (
+          {user && profile?.full_name && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4 max-w-md mx-auto">
               <p className="text-green-800 dark:text-green-200 text-sm">
                 <strong>, {profile.full_name}!</strong> Ready to help your community?
@@ -224,15 +207,18 @@ const Volunteer = () => {
             >
               Switch Role
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCurrentView('welcome');
-              }}
-              className="text-sm"
-            >
-              Sign Out
-            </Button>
+            {user && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCurrentView('welcome');
+                  // Placeholder for sign-out (handled by AuthProvider)
+                }}
+                className="text-sm"
+              >
+                Sign Out
+              </Button>
+            )}
           </div>
         </div>
 
@@ -342,6 +328,20 @@ const Volunteer = () => {
                 </Button>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* Login Modal */}
+        {showLoginModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          >
+            <LoginModal
+              onLogin={handleLogin}
+              onBack={() => setShowLoginModal(false)}
+            />
           </motion.div>
         )}
       </div>

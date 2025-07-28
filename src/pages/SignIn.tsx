@@ -1,197 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Target, Mail, Lock } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
+import { Lock, Mail, IdCard, Flag } from 'lucide-react';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [userType, setUserType] = useState<'donor' | 'recipient' | 'volunteer'>('donor');
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [loading, setLoading] = useState(false);
-
+  const [identification, setIdentification] = useState('');
+  const [isSouthAfrican, setIsSouthAfrican] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const verified = urlParams.get('verified');
-    const error = urlParams.get('error');
-    if (verified === 'true') {
-      toast({
-        title: 'Email Verified!',
-        description: 'Please sign in.',
-      });
-      setMode('signin');
-    } else if (error) {
-      toast({
-        title: 'Error',
-        description: 'Verification failed. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  }, [location.search, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
     try {
-      if (mode === 'signin') {
-        await signIn(email, password);
+      if (isSignUp) {
+        await signUp(email, password, { full_name: email.split('@')[0] }, identification, isSouthAfrican);
         toast({
-          title: 'Welcome!',
-          description: 'Successfully signed in.',
+          title: 'Sign Up Successful! 🎉',
+          description: 'Check your email to verify your account. 📧',
         });
-        navigate('/');
       } else {
-        await signUp(email, password, { full_name: fullName, phone, user_type: userType });
+        const { error } = await signIn(email, password);
+        if (error) throw error;
         toast({
-          title: 'Account Created!',
-          description: 'Please check your email to verify your account.',
+          title: 'Sign In Successful! 🌟',
+          description: 'Welcome back! 🚀',
         });
-        setMode('signin');
       }
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'An error occurred.',
+        description: error.message || 'Something went wrong. Try again. 😞',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-8">
-          <div className="relative h-64 mb-8 rounded-3xl overflow-hidden">
-            <img
-              src="/lovable-uploads/katherine-hood-WzpTINUT-3E-unsplash.jpg"
-              alt="Community volunteers"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-green-600/80 to-transparent" />
+    <div className="min-h-screen bg-gradient-to-br from-teal-100 via-purple-100 to-pink-100 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full max-w-md p-8 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+          {isSignUp ? 'Sign Up 🌱' : 'Sign In ✨'}
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-gray-700">Email 📧</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="pl-10 bg-gray-50 border-gray-200 focus:border-purple-500"
+              />
+            </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-            {mode === 'signin' ? '' : 'Join Our Community Today!'}
-            <br />
-            <span className="text-green-600">Make a Difference Today</span>
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            {mode === 'signin'
-              ? 'Sign in or sign up to continue your journey.'
-              : 'Sign up to start helping South African communities.'}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
-          {mode === 'signup' && (
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-gray-700">Password 🔒</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="pl-10 bg-gray-50 border-gray-200 focus:border-purple-500"
+              />
+            </div>
+          </div>
+          {isSignUp && (
             <>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <div className="relative">
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className="pl-10"
-                      placeholder="Your Full Name"
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="identification" className="text-gray-700">
+                  {isSouthAfrican ? 'ID Number 🇿🇦' : 'Passport Number 🌍'} 🆔
+                </Label>
+                <div className="relative">
+                  <IdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Input
+                    id="identification"
+                    type="text"
+                    value={identification}
+                    onChange={(e) => setIdentification(e.target.value)}
+                    placeholder={isSouthAfrican ? 'Enter ID number' : 'Enter passport number'}
+                    className="pl-10 bg-gray-50 border-gray-200 focus:border-purple-500"
+                  />
                 </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <div className="relative">
-                    <Input
-                      id="phone"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      className="pl-10"
-                      placeholder="Your Phone Number"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="userType">User Type</Label>
-                  <select
-                    id="userType"
-                    value={userType}
-                    onChange={(e) => setUserType(e.target.value as any)}
-                    required
-                    className="w-full p-2 border rounded-md"
-                  >
-                    <option value="donor">Donor</option>
-                    <option value="recipient">Recipient</option>
-                    <option value="volunteer">Volunteer</option>
-                  </select>
-                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isSouthAfrican"
+                  checked={isSouthAfrican}
+                  onChange={(e) => setIsSouthAfrican(e.target.checked)}
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <Label htmlFor="isSouthAfrican" className="text-gray-700">South African? 🇿🇦</Label>
               </div>
             </>
           )}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-          </div>
           <Button
             type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white"
           >
-            {loading ? 'Processing...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
-            <Target className="w-5 h-5 ml-2" />
+            {isSignUp ? 'Sign Up 🚀' : 'Sign In 🌟'}
           </Button>
-          <Button
-            type="button"
-            onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-            variant="outline"
-            className="w-full text-green-600 hover:text-green-700"
-          >
-            {mode === 'signin' ? 'Switch to Sign Up' : 'Switch to Sign In'}
-          </Button>
+          <p className="text-center text-gray-600">
+            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-purple-600 hover:text-purple-700 font-medium"
+            >
+              {isSignUp ? 'Sign In' : 'Sign Up'} ✨
+            </button>
+          </p>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };

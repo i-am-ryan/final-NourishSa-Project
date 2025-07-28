@@ -9,7 +9,7 @@ interface AuthContextType {
   profile: any | null;
   signOut: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: AuthError }>;
-  signUp: (email: string, password: string, userData: any) => Promise<any>;
+  signUp: (email: string, password: string, userData: any, identification: string, isSouthAfrican: boolean) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -39,7 +39,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session); // Debug log
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -83,13 +82,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, userData: any) => {
+  const signUp = async (email: string, password: string, userData: any, identification: string, isSouthAfrican: boolean) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: userData,
-        emailRedirectTo: 'https://final-nourish-sa-project.vercel.app/auth/callback', // Ensure this matches your live URL
+        data: { ...userData, identification_number: identification, is_south_african: isSouthAfrican },
+        emailRedirectTo: 'https://final-nourish-sa-project.vercel.app/auth/callback',
       },
     });
     if (error) throw error;
