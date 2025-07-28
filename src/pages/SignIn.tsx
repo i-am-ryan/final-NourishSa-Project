@@ -77,20 +77,20 @@ const SignIn = () => {
         <div className="text-center mb-8">
           <div className="relative h-64 mb-8 rounded-3xl overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070"
+              src="/lovable-uploads/katherine-hood-WzpTINUT-3E-unsplash.jpg"
               alt="Community volunteers"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-green-600/80 to-transparent" />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-            {mode === 'signin' ? 'Welcome Back!' : 'Join Our Community!'}
+            {mode === 'signin' ? '' : 'Join Our Community Today!'}
             <br />
             <span className="text-green-600">Make a Difference Today</span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
             {mode === 'signin'
-              ? 'Sign in to continue your volunteering journey.'
+              ? 'Sign in or sign up to continue your journey.'
               : 'Sign up to start helping South African communities.'}
           </p>
         </div>

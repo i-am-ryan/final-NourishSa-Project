@@ -129,6 +129,7 @@ const Volunteer = () => {
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Join thousands of volunteers making a real difference in South African communities.
               Every task you complete feeds families and builds hope.
+              Sign in or sign up to continue your volunteering journey.
             </p>
 
             {/* Quick Stats Preview */}

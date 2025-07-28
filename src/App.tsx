@@ -38,8 +38,7 @@ const App = () => (
                 <Route path="/about" element={<About />} />
                 <Route path="/surplus" element={<Surplus />} />
                 <Route path="/volunteer" element={<Volunteer />} />
-                <Route pat
-h="/hubs" element={<FoodHubs />} />
+                <Route path="/hubs" element={<FoodHubs />} /> {/* Fixed typo: path instead of pat */}
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignIn />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
