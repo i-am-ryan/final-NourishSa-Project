@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HeroImpactSection from '@/components/volunteer/HeroImpactSection';
@@ -6,25 +5,28 @@ import TaskBoard from '@/components/volunteer/TaskBoard';
 import ProgressTracker from '@/components/volunteer/ProgressTracker';
 import CommunityFeed from '@/components/volunteer/CommunityFeed';
 import InteractiveCalendar from '@/components/InteractiveCalendar';
-import LoginModal from '@/components/volunteer/LoginModal';
+import SignInPrompt from '@/components/SignInPrompt';
 import RoleSelector from '@/components/volunteer/RoleSelector';
 import { Button } from '@/components/ui/button';
 import { useVolunteerTasks } from '@/hooks/useVolunteerTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { MapPin, Calendar, Target, BarChart3, Camera, Heart, Truck, Package } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Lock } from 'lucide-react';
 
 const Volunteer = () => {
-  const [currentView, setCurrentView] = useState<'welcome' | 'login' | 'role-selection' | 'hub'>('welcome');
+  const [currentView, setCurrentView] = useState<'welcome' | 'role-selection' | 'hub'>('welcome');
   const [activeTab, setActiveTab] = useState<'tasks' | 'impact' | 'stories' | 'schedule'>('tasks');
   const [selectedRole, setSelectedRole] = useState<'pickup' | 'delivery' | null>(null);
   const [showProgressDrawer, setShowProgressDrawer] = useState(false);
   const [showCommunityPrompt, setShowCommunityPrompt] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
   const { user, profile } = useAuth();
   const { tasks, loading, error, acceptTask, updateTask, getStats } = useVolunteerTasks({
     status: 'pending',
     autoRefresh: true,
-    refreshInterval: 30000 // Refresh every 30 seconds
+    refreshInterval: 30000, // Refresh every 30 seconds
   });
 
   // Transform API tasks to match the expected format
@@ -36,18 +38,18 @@ const Volunteer = () => {
     time: new Date(task.scheduled_time).toLocaleTimeString(),
     items: `${task.donation?.estimated_meals || 0} estimated meals`,
     points: Math.floor(Math.random() * 20) + 10, // Random points for demo
-    status: task.status as 'available' | 'in-progress' | 'completed'
+    status: task.status as 'available' | 'in-progress' | 'completed',
   }));
 
   const [volunteerStats, setVolunteerStats] = useState({
     totalPoints: 145,
     tasksCompleted: 23,
     rank: 'Community Champion',
-    level: 3
+    level: 3,
   });
 
   // Filter tasks based on selected role
-  const filteredTasks = selectedRole ? transformedTasks.filter(task => task.type === selectedRole) : transformedTasks;
+  const filteredTasks = selectedRole ? transformedTasks.filter((task) => task.type === selectedRole) : transformedTasks;
 
   const handleTaskUpdate = async (taskId: number, newStatus: 'available' | 'in-progress' | 'completed') => {
     try {
@@ -91,7 +93,8 @@ const Volunteer = () => {
     if (isLoggedIn) {
       setCurrentView('role-selection');
     } else {
-      setCurrentView('login');
+      // Do nothing or log message, as we'll show alert instead of prompt
+      console.log('Please sign in to access the volunteer portal.');
     }
   };
 
@@ -108,7 +111,7 @@ const Volunteer = () => {
           >
             {/* Hero Image */}
             <div className="relative h-64 mb-8 rounded-3xl overflow-hidden">
-              <img 
+              <img
                 src="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070"
                 alt="Community volunteers"
                 className="w-full h-full object-cover"
@@ -122,9 +125,9 @@ const Volunteer = () => {
               <br />
               <span className="text-green-600">Let's Start Your Journey!</span>
             </h1>
-            
+
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of volunteers making a real difference in South African communities. 
+              Join thousands of volunteers making a real difference in South African communities.
               Every task you complete feeds families and builds hope.
             </p>
 
@@ -145,7 +148,7 @@ const Volunteer = () => {
             </div>
 
             {/* Start Button */}
-            <Button 
+            <Button
               size="lg"
               onClick={startVolunteering}
               className="bg-green-600 hover:bg-green-700 text-white px-12 py-6 text-xl font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
@@ -159,14 +162,23 @@ const Volunteer = () => {
     );
   }
 
-  // Login Modal
-  if (currentView === 'login') {
+  // Show access denied message if user is not logged in
+  if (!isLoggedIn) {
     return (
       <div className="min-h-screen pt-16 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <LoginModal 
-          onLogin={handleLogin}
-          onBack={() => setCurrentView('welcome')}
-        />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <Alert variant="destructive" className="max-w-md mx-auto">
+            <Lock className="h-4 w-4" />
+            <AlertTitle>Access Denied</AlertTitle>
+            <AlertDescription>
+              You need to be signed in to access the volunteer portal. Please{' '}
+              <a href="/signin" className="text-green-600 hover:underline">
+                sign in
+              </a>{' '}
+              to continue and start making a difference!
+            </AlertDescription>
+          </Alert>
+        </div>
       </div>
     );
   }
@@ -175,7 +187,7 @@ const Volunteer = () => {
   if (currentView === 'role-selection') {
     return (
       <div className="min-h-screen pt-16 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <RoleSelector 
+        <RoleSelector
           userName={userName}
           onRoleSelect={handleRoleSelection}
           onBack={() => setCurrentView('welcome')}
@@ -191,21 +203,28 @@ const Volunteer = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Hi {userName}! 
+            Hi {userName}!
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
             Let's make a difference today as a {selectedRole} volunteer
           </p>
+          {profile?.full_name && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4 max-w-md mx-auto">
+              <p className="text-green-800 dark:text-green-200 text-sm">
+                <strong>, {profile.full_name}!</strong> Ready to help your community?
+              </p>
+            </div>
+          )}
           <div className="flex justify-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setCurrentView('role-selection')}
               className="text-sm"
             >
               Switch Role
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setCurrentView('welcome');
               }}
@@ -223,11 +242,11 @@ const Volunteer = () => {
               { id: 'tasks', label: 'Tasks', icon: selectedRole === 'pickup' ? Package : Truck },
               { id: 'impact', label: 'My Impact', icon: BarChart3 },
               { id: 'stories', label: 'Stories', icon: Camera },
-              { id: 'schedule', label: 'Schedule', icon: Calendar }
+              { id: 'schedule', label: 'Schedule', icon: Calendar },
             ].map((tab) => (
               <Button
                 key={tab.id}
-                variant={activeTab === tab.id ? "default" : "ghost"}
+                variant={activeTab === tab.id ? 'default' : 'ghost'}
                 onClick={() => setActiveTab(tab.id as any)}
                 className="flex items-center space-x-2 px-6 py-3"
               >
@@ -248,11 +267,7 @@ const Volunteer = () => {
           {activeTab === 'tasks' && (
             <div className="grid lg:grid-cols-4 gap-8">
               <div className="lg:col-span-3">
-                <TaskBoard 
-                  tasks={filteredTasks} 
-                  onTaskUpdate={handleTaskUpdate}
-                  roleFilter={selectedRole}
-                />
+                <TaskBoard tasks={filteredTasks} onTaskUpdate={handleTaskUpdate} roleFilter={selectedRole} />
               </div>
               <div className="lg:col-span-1">
                 <ProgressTracker volunteerStats={volunteerStats} />
@@ -267,9 +282,7 @@ const Volunteer = () => {
             </div>
           )}
 
-          {activeTab === 'stories' && (
-            <CommunityFeed />
-          )}
+          {activeTab === 'stories' && <CommunityFeed />}
 
           {activeTab === 'schedule' && (
             <div className="max-w-4xl mx-auto">
@@ -281,7 +294,7 @@ const Volunteer = () => {
         {/* Progress Drawer */}
         {showProgressDrawer && (
           <motion.div
-            initial={{ y: "100%" }}
+            initial={{ y: '100%' }}
             animate={{ y: 0 }}
             className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t shadow-2xl rounded-t-3xl z-50"
           >
@@ -290,10 +303,7 @@ const Volunteer = () => {
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   🎉 Great work! Here's your progress
                 </h3>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setShowProgressDrawer(false)}
-                >
+                <Button variant="ghost" onClick={() => setShowProgressDrawer(false)}>
                   ✕
                 </Button>
               </div>
@@ -322,8 +332,8 @@ const Volunteer = () => {
                   <Camera className="w-4 h-4 mr-2" />
                   Upload Photo
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1"
                   onClick={() => setShowCommunityPrompt(false)}
                 >

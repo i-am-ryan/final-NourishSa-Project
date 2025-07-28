@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/GlassCard';
 import DonateSurplusForm from '@/components/surplus/DonateSurplusForm';
 import ClaimSurplusForm from '@/components/surplus/ClaimSurplusForm';
+import SignInPrompt from '@/components/SignInPrompt';
 import { useDonations } from '@/hooks/useDonations';
 import { useAuth } from '@/hooks/useAuth';
 import { 
@@ -23,7 +24,8 @@ const Surplus = () => {
   const [activeFlow, setActiveFlow] = useState<'none' | 'donate' | 'claim'>('none');
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const { user } = useAuth();
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const { user, profile } = useAuth();
   const { donations, loading, error, createDonation, claimDonation } = useDonations({
     status: 'available',
     autoRefresh: true,
@@ -32,9 +34,7 @@ const Surplus = () => {
 
   const handleDonateSubmit = async (data: any) => {
     if (!user) {
-      setSuccessMessage("Please sign in to donate food.");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 5000);
+      setShowSignInPrompt(true);
       return;
     }
 
@@ -70,9 +70,7 @@ const Surplus = () => {
 
   const handleClaimSubmit = async (data: any) => {
     if (!user) {
-      setSuccessMessage("Please sign in to claim food.");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 5000);
+      setShowSignInPrompt(true);
       return;
     }
 
@@ -198,7 +196,14 @@ const Surplus = () => {
                 <span className="text-green-400">Hub</span>
               </h1>
               <p className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto drop-shadow-md">
-                Smart matching system that connects surplus food with verified recipients through local volunteers
+                {user ? (
+                  <>
+                    Welcome back, <span className="text-green-400 font-semibold">{profile?.full_name || user.email?.split('@')[0]}</span>! 
+                    Smart matching system that connects surplus food with verified recipients through local volunteers
+                  </>
+                ) : (
+                  "Smart matching system that connects surplus food with verified recipients through local volunteers"
+                )}
               </p>
             </motion.div>
           </div>
@@ -458,6 +463,15 @@ const Surplus = () => {
           </AnimatePresence>
         </div>
       </div>
+      
+      {/* Sign In Prompt Modal */}
+      <SignInPrompt
+        isOpen={showSignInPrompt}
+        onClose={() => setShowSignInPrompt(false)}
+        title="Sign In to Continue"
+        description="Please sign in to donate or claim food items."
+        action="Sign In to Continue"
+      />
     </div>
   );
 };

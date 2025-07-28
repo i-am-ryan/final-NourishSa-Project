@@ -5,16 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/GlassCard';
 import { MapPin, Clock, Phone, Users, Map as MapIcon } from 'lucide-react';
-import HubLoginModal from '@/components/hubs/HubLoginModal';
+import SignInPrompt from '@/components/SignInPrompt';
 import SuburbSelector from '@/components/hubs/SuburbSelector';
 import HubCard from '@/components/hubs/HubCard';
+import { useAuth } from '@/hooks/useAuth';
 import bannerImage from '@/assets/food-hubs-banner.jpg';
 
 const FoodHubs = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedSuburb, setSelectedSuburb] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const { user, profile } = useAuth();
 
   const hubsData = {
     // Johannesburg Suburbs
@@ -100,9 +101,8 @@ const FoodHubs = () => {
   };
 
   const handleLogin = (email: string, password: string) => {
-    console.log('Login attempt:', { email, password });
-    setIsLoggedIn(true);
-    setShowLoginModal(false);
+    // This is now handled by the unified auth system
+    setShowSignInPrompt(false);
   };
 
   const handleSuburbSelect = (suburb: string) => {
@@ -115,8 +115,8 @@ const FoodHubs = () => {
   };
 
   const handleStartJourney = () => {
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
+    if (!user) {
+      setShowSignInPrompt(true);
     }
   };
 
@@ -145,7 +145,14 @@ const FoodHubs = () => {
                 </h1>
                 
                 <p className="text-lg md:text-xl max-w-3xl mx-auto">
-                  Find food assistance near you. Browse trusted community food hubs serving Johannesburg and Pretoria suburbs.
+                  {user ? (
+                    <>
+                      Welcome back, <span className="text-green-400 font-semibold">{profile?.full_name || user.email?.split('@')[0]}</span>! 
+                      Find food assistance near you. Browse trusted community food hubs serving Johannesburg and Pretoria suburbs.
+                    </>
+                  ) : (
+                    "Find food assistance near you. Browse trusted community food hubs serving Johannesburg and Pretoria suburbs."
+                  )}
                 </p>
               </div>
             </div>
@@ -154,7 +161,7 @@ const FoodHubs = () => {
 
         <AnimatePresence mode="wait">
           {/* Login/Signup Prompt */}
-          {!isLoggedIn && (
+          {!user && (
             <motion.div
               key="login-prompt"
               initial={{ opacity: 0, y: 20 }}
@@ -192,7 +199,7 @@ const FoodHubs = () => {
           )}
 
           {/* Suburb Selection */}
-          {isLoggedIn && !selectedSuburb && (
+          {user && !selectedSuburb && (
             <motion.div
               key="suburb-selection"
               initial={{ opacity: 0, y: 20 }}
@@ -205,7 +212,7 @@ const FoodHubs = () => {
           )}
 
           {/* Hub Display */}
-          {isLoggedIn && selectedSuburb && (
+          {user && selectedSuburb && (
             <motion.div
               key="hub-display"
               initial={{ opacity: 0, y: 20 }}
@@ -283,7 +290,7 @@ const FoodHubs = () => {
         </AnimatePresence>
 
         {/* Footer Information */}
-        {isLoggedIn && selectedSuburb && (
+        {user && selectedSuburb && (
           <motion.div
             className="mt-16 grid md:grid-cols-2 gap-8"
             initial={{ opacity: 0, y: 30 }}
@@ -315,11 +322,13 @@ const FoodHubs = () => {
         )}
       </div>
 
-      {/* Login Modal */}
-      <HubLoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onLogin={handleLogin}
+      {/* Sign In Prompt Modal */}
+      <SignInPrompt
+        isOpen={showSignInPrompt}
+        onClose={() => setShowSignInPrompt(false)}
+        title="Sign In to Access Food Hubs"
+        description="Please sign in to find food assistance in your area."
+        action="Sign In to Continue"
       />
     </div>
   );

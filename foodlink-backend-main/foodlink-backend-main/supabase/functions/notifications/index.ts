@@ -300,7 +300,22 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+serve(async (req) => {
+  if (req.method === 'POST' && req.url.endsWith('/send')) {
+    const { email, type } = await req.json();
+    if (type === 'verification') {
+      const { error } = await supabase.auth.resend({
+        email,
+        type: 'signup',
+        options: { emailRedirectTo: 'https://nourish-two.vercel.app/auth/callback' },
+      });
+      return new Response(JSON.stringify({ error: error?.message }), { status: error ? 400 : 200 });
+    }
+  }
+  return new Response('Method not allowed', { status: 405 });
+});
 // WhatsApp integration with actual API
 async function sendWhatsAppMessage(message: WhatsAppMessage): Promise<any> {
   try {

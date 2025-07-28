@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import AuthCallback from '@/pages/AuthCallback';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />

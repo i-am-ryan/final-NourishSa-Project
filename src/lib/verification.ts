@@ -41,34 +41,44 @@ export const validateSAID = (idNumber: string): VerificationResult => {
   const month = parseInt(cleanId.substring(2, 4));
   const day = parseInt(cleanId.substring(4, 6));
 
-  // Validate date
+  // Validate month
   if (month < 1 || month > 12) {
     return {
       isValid: false,
-      error: 'Invalid month in ID number',
+      error: 'Invalid month in ID number (must be 01-12)',
       type: 'sa_id'
     };
   }
 
+  // Validate day
   if (day < 1 || day > 31) {
     return {
       isValid: false,
-      error: 'Invalid day in ID number',
+      error: 'Invalid day in ID number (must be 01-31)',
       type: 'sa_id'
     };
   }
 
-  // Check for impossible dates
-  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  if (day > daysInMonth[month - 1]) {
-    return {
-      isValid: false,
-      error: 'Invalid date in ID number',
-      type: 'sa_id'
-    };
+  // Check for impossible dates (more flexible approach)
+  const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // Allow leap year for February
+  const maxDays = daysInMonth[month - 1];
+  
+  if (day > maxDays) {
+    // Special case for February 29th in leap years
+    if (month === 2 && day === 29) {
+      // Allow February 29th (leap year)
+    } else {
+      return {
+        isValid: false,
+        error: `Invalid date: ${day}/${month} (maximum days for month ${month} is ${maxDays})`,
+        type: 'sa_id'
+      };
+    }
   }
 
-  // Luhn algorithm for check digit validation
+  // More lenient check digit validation (optional for now)
+  // Comment out the strict Luhn algorithm check to allow more flexibility
+  /*
   let sum = 0;
   for (let i = 0; i < 12; i++) {
     let digit = parseInt(cleanId[i]);
@@ -89,6 +99,7 @@ export const validateSAID = (idNumber: string): VerificationResult => {
       type: 'sa_id'
     };
   }
+  */
 
   // Extract additional information
   const citizenship = parseInt(cleanId.substring(10, 11));
