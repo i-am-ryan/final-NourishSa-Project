@@ -40,10 +40,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-const supabaseClient = createClient(
-  'https://lrvgennjbmmbtpywloem.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxydmdlbm5qYm1tYnRweXdsb2VtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzI5NTg0MywiZXhwIjoyMDY4ODcxODQzfQ.MQA9fsVttAnRAzAVxddoJAPwt5KLQlQBMEJP2zDKr20'
-);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
 
     const authHeader = req.headers.get('Authorization');
     if (authHeader) {
