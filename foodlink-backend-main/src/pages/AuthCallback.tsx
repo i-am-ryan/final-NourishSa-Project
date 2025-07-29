@@ -10,50 +10,40 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      try {
-        const tokenHash = searchParams.get('token_hash');
-        const type = searchParams.get('type');
-        const next = searchParams.get('next');
+      const code = searchParams.get('code');
+      const next = searchParams.get('next');
 
-        if (tokenHash && type) {
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: type as any,
-          });
+      if (code) {
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
             console.error('Verification error:', error);
             toast({
               title: "Verification Failed",
-              description: error.message || "Failed to verify email. Please try again.",
+              description: error.message || "Failed to verify your email.",
               variant: "destructive",
             });
             navigate('/signin?error=verification_failed');
             return;
           }
 
-          if (data.user) {
-            toast({
-              title: "Email Verified!",
-              description: "Your email has been successfully verified. Welcome to NourishSA!",
-            });
-            navigate(next || '/signin?verified=true');
-          }
-        } else {
-          // Handle session from URL (for other auth flows)
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) {
-            console.error('Session error:', error);
-            navigate('/signin?error=session_error');
-          } else if (session) {
-            navigate('/');
-          } else {
-            navigate('/signin');
-          }
+          toast({
+            title: "Email Verified!",
+            description: "Your email has been verified successfully.",
+          });
+          navigate(next || '/');
+        } catch (err) {
+          console.error('Unexpected error:', err);
+          navigate('/signin?error=unexpected_error');
         }
-      } catch (error) {
-        console.error('Auth callback error:', error);
-        navigate('/signin?error=callback_error');
+      } else {
+        toast({
+          title: "Missing Code",
+          description: "Invalid verification link.",
+          variant: "destructive",
+        });
+        navigate('/signin?error=missing_code');
       }
     };
 

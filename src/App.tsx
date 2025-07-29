@@ -21,6 +21,7 @@ import AuthTest from "./components/AuthTest";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/signup" element={<SignIn />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/verify-email" element={<AuthCallback />} /> {/* New route to handle verification */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/test-auth" element={<TestAuth />} />
                 <Route path="/test-email" element={<EmailTest />} />
                 <Route path="/auth-test" element={<AuthTest />} />
