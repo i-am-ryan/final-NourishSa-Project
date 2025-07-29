@@ -24,7 +24,7 @@ export const auth = {
           phone: userData?.phone || '',
           user_type: userData?.user_type || 'recipient',
         },
-        emailRedirectTo: 'https://nourish-two.vercel.app/auth/callback', // Updated to match frontend
+        emailRedirectTo: 'https://final-nourish-sa-project.vercel.app/auth/callback', // Updated to match frontend
       },
     });
     return { data, error };
