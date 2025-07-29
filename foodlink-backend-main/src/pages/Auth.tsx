@@ -16,7 +16,6 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is already logged in and handle email verification
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -25,7 +24,6 @@ export default function Auth() {
       }
     };
     
-    // Handle email verification callback
     const urlParams = new URLSearchParams(window.location.search);
     const verified = urlParams.get('verified');
     const error = urlParams.get('error');
@@ -33,21 +31,14 @@ export default function Auth() {
 
     if (verified === 'true') {
       toast.success('Email verified successfully! You can now sign in.');
-      // Clear URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (error) {
       toast.error(errorDescription || 'Email verification failed. Please try again.');
-      // Clear URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
     }
     
     checkUser();
   }, [navigate]);
-// Auth.tsx
-
-
-
-  // ... (keep existing state and useEffect)
 
   const handleSignUp = async (formData: FormData) => {
     setIsLoading(true);
@@ -59,14 +50,13 @@ export default function Auth() {
     const address = formData.get('address') as string;
 
     try {
-      // Use the deployed URL instead of localhost:8080
       const redirectUrl = 'https://final-nourish-sa-project.vercel.app/auth/callback';
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: redirectUrl, // Consistent redirect URL
           data: {
             full_name: fullName,
             phone,
@@ -80,7 +70,6 @@ export default function Auth() {
 
       if (data.user) {
         toast.success('Account created! Please check your email to verify your account.');
-        // Do not navigate immediately; wait for verification
       }
     } catch (error: any) {
       console.error('Sign up error:', error);
@@ -89,9 +78,6 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
-
-  // ... (keep existing handleSignIn, UserTypeCard, and return)
-
 
   const handleSignIn = async (formData: FormData) => {
     setIsLoading(true);

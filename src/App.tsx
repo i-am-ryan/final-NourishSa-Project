@@ -38,10 +38,11 @@ const App = () => (
                 <Route path="/about" element={<About />} />
                 <Route path="/surplus" element={<Surplus />} />
                 <Route path="/volunteer" element={<Volunteer />} />
-                <Route path="/hubs" element={<FoodHubs />} /> {/* Fixed typo: path instead of pat */}
+                <Route path="/hubs" element={<FoodHubs />} />
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignIn />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/verify-email" element={<AuthCallback />} /> {/* New route to handle verification */}
                 <Route path="/test-auth" element={<TestAuth />} />
                 <Route path="/test-email" element={<EmailTest />} />
                 <Route path="/auth-test" element={<AuthTest />} />
